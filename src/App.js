@@ -15,9 +15,14 @@ function App() {
 	const handleImportData = (event) => {
 		console.log(event.target.files[0]);
 
-		// Do some thing then setData
+		let reader = new FileReader();
 
-		setData(initialData());
+		reader.readAsText(event.target.files[0]);
+
+		const data = JSON.parse(reader.result);
+		dataCache = data;
+
+		setData(data);
 	};
 
 	const handleClearData = () => {
