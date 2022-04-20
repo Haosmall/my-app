@@ -1,28 +1,37 @@
-import { Button, Col, Input, Row, Table } from "antd";
+import { Button, Col, Input, Row, Table, Tag } from "antd";
 import React, { useRef, useState } from "react";
 import "./App.css";
-import { initialData } from "./utils";
 
 function App() {
 	const { Column } = Table;
 
-	let dataCache = initialData();
+	const dataCache = useRef([]);
 
-	const [data, setData] = useState(dataCache);
+	const [data, setData] = useState(dataCache.current);
 
 	const fileInput = useRef();
 
 	const handleImportData = (event) => {
 		console.log(event.target.files[0]);
-
-		let reader = new FileReader();
+		const reader = new FileReader();
 
 		reader.readAsText(event.target.files[0]);
 
-		const data = JSON.parse(reader.result);
-		dataCache = data;
+		reader.onload = (event) => {
+			// The file's text will be printed here
+			// console.log(event.target.result);
+			const dataObj = JSON.parse(event.target.result);
 
-		setData(data);
+			const newData = [];
+
+			if (dataObj["ont-ports"]) {
+				for (const [_, value] of Object.entries(dataObj["ont-ports"])) {
+					newData.push(value);
+				}
+			}
+			dataCache.current = newData;
+			setData(newData);
+		};
 	};
 
 	const handleClearData = () => {
@@ -31,13 +40,16 @@ function App() {
 
 	const handleSearchByName = (event) => {
 		const value = event.target.value;
-		console.log(value);
 
-		const newDatas = dataCache.filter((element) =>
-			element.name.includes(value)
+		const newData = dataCache.current.filter((element) =>
+			element["ont-name"].includes(value)
 		);
 
-		setData(newDatas);
+		setData(newData);
+	};
+
+	const renderValue = (value) => {
+		return value ? <span>{value}</span> : <Tag color="error">Empty</Tag>;
 	};
 
 	return (
@@ -84,14 +96,54 @@ function App() {
 						showSizeChanger: true,
 						pageSizeOptions: ["10", "20", "30"],
 					}}
-					// Set vertical scrolling, specify the height of the scroll area to be 300
-					scroll={{ y: 400 }}
+					// Set scrolling
+					scroll={{ x: "fit-content", y: 400 }}
 					// Set row key, record is each element in your data. So you can replace record.key with other attributes in record
-					rowKey={(record) => record.key}
+					rowKey={(record) => record.ontId}
 				>
-					<Column title="Name" dataIndex="name" width={200} />
-					<Column title="Age" dataIndex="age" width={150} />
-					<Column title="Address" dataIndex="address" />
+					<Column
+						title="cardType"
+						dataIndex="cardType"
+						render={(text) => {
+							return renderValue(text);
+						}}
+					/>
+					<Column
+						title="deviceName"
+						dataIndex="deviceName"
+						width={150}
+						render={(text) => renderValue(text)}
+					/>
+					<Column
+						title="expected-serial-number"
+						dataIndex="expected-serial-number"
+						render={(text) => renderValue(text)}
+					/>
+					<Column
+						title="ont-name"
+						dataIndex="ont-name"
+						render={(text) => renderValue(text)}
+					/>
+					<Column
+						title="ont-speed"
+						dataIndex="ont-speed"
+						render={(text) => renderValue(text)}
+					/>
+					<Column
+						title="ont-type"
+						dataIndex="ont-type"
+						render={(text) => renderValue(text)}
+					/>
+					<Column
+						title="onu-service-profile"
+						dataIndex="onu-service-profile"
+						render={(text) => renderValue(text)}
+					/>
+					<Column
+						title="ponId"
+						dataIndex="ponId"
+						render={(text) => renderValue(text)}
+					/>
 				</Table>
 			</div>
 		</div>
